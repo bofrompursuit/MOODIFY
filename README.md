@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MOODIFY
 
-## Getting Started
+AI mood board generator. Describe a vibe, get a curated, drag-to-reorder
+mood board pulled from stock photos, live web discovery, and custom AI
+imagery — exportable as a PNG.
 
-First, run the development server:
+## Flow
+
+1. **Brief input** — a dark-mode search box with preset chips (Cyberpunk
+   Editorial, Scandinavian Interior, etc). Submitting a brief calls
+   `POST /api/mood-board`.
+2. **Keyword extraction** — `src/lib/extractKeywords.ts` sends the brief to
+   Claude to get `{ stock_keywords, baseten_prompt, nimble_search_query }`.
+   Without `ANTHROPIC_API_KEY`, a local heuristic extractor stands in so the
+   rest of the pipeline still runs.
+3. **Multi-source fetch** — `src/lib/aggregate.ts` fans out to Unsplash,
+   Pexels, and Nimble in parallel, de-dupes, and returns up to 16 tiles.
+4. **Masonry board** — `MoodBoardGrid` renders a 4-column, drag-and-drop
+   reorderable grid (`@hello-pangea/dnd` + `framer-motion`). Each tile has a
+   regenerate menu to re-source it from any of the four providers
+   individually via `POST /api/regenerate-tile`.
+5. **Export** — `ExportButton` rasterizes the board to a PNG with
+   `html-to-image`.
+6. **CRM sync** — every generation is best-effort logged to a Salesforce
+   `Mood_Board__c` record (`src/lib/salesforce.ts`) when creds are present;
+   otherwise it just logs locally and the request still succeeds.
+
+The `/api/status` endpoint (surfaced as pills under the title) reports which
+integrations are actually live vs. running on their fallback.
+
+## Setup
 
 ```bash
+npm install
+cp .env.example .env.local   # fill in whatever keys you have
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app is fully functional with **zero** keys configured — every
+integration degrades gracefully. See `.env.example` for what each key
+unlocks, and notes on where Baseten's and Nimble's endpoints are
+account/deployment-specific and may need adjusting from your dashboard.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Standard Next.js app, deployed on Vercel. Push env vars via `vercel env add`
+or the dashboard, matching `.env.example`.
