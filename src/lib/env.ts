@@ -1,8 +1,7 @@
 export const hasAnthropicKey = () => Boolean(process.env.ANTHROPIC_API_KEY);
 export const hasUnsplashKey = () => Boolean(process.env.UNSPLASH_ACCESS_KEY);
 export const hasPexelsKey = () => Boolean(process.env.PEXELS_API_KEY);
-export const hasNimbleKey = () =>
-  Boolean(process.env.NIMBLE_API_KEY && process.env.NIMBLE_ACCOUNT_ID);
+export const hasNimbleKey = () => Boolean(process.env.NIMBLE_API_KEY);
 export const hasBasetenKey = () =>
   Boolean(process.env.BASETEN_API_KEY && process.env.BASETEN_MODEL_URL);
 export const hasSalesforceCreds = () =>
