@@ -59,6 +59,7 @@ export async function fetchNimble(query: string, count = 4): Promise<MoodTile[]>
       return {
         id: `nimble-${query}-${i}`,
         source: "nimble" as const,
+        kind: "image" as const,
         imageUrl,
         sourceUrl,
         credit: typeof item.source_name === "string" ? item.source_name : undefined,
@@ -67,6 +68,67 @@ export async function fetchNimble(query: string, count = 4): Promise<MoodTile[]>
         height: Number(item.height) || 1000,
       };
     }).filter((tile) => tile.imageUrl);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * "google_search" (unlike "google_images") reliably returns parsed
+ * OrganicResult entities on this account. When image discovery comes up
+ * short — currently always, until google_images is enabled — these are
+ * rendered as text/link "clipping" cards instead, so the board still has
+ * real, on-brief content (headline + excerpt + source link) rather than
+ * being empty.
+ */
+export async function fetchNimbleClippings(query: string, count = 4): Promise<MoodTile[]> {
+  if (!hasNimbleKey()) return [];
+
+  const endpoint = process.env.NIMBLE_API_URL ?? "https://api.webit.live/api/v1/realtime/serp";
+  const authHeader = process.env.NIMBLE_ACCOUNT_ID
+    ? `Basic ${Buffer.from(`${process.env.NIMBLE_ACCOUNT_ID}:${process.env.NIMBLE_API_KEY}`).toString("base64")}`
+    : `Bearer ${process.env.NIMBLE_API_KEY}`;
+
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        Authorization: authHeader,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ parse: true, search_engine: "google_search", query }),
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      console.warn(`[nimble] clippings ${res.status} ${res.statusText}: ${await res.text()}`);
+      return [];
+    }
+
+    const data = await res.json();
+    const results: Array<Record<string, unknown>> = data?.parsing?.entities?.OrganicResult ?? [];
+
+    // item.url is Google's opaque /goto? redirect token, not a real URL —
+    // derive a clean link from displayed_url's domain instead (best-effort;
+    // links to the site rather than guaranteeing the exact deep path).
+    return results
+      .filter((item) => typeof item.title === "string")
+      .slice(0, count)
+      .map((item, i) => {
+        const displayedUrl = typeof item.displayed_url === "string" ? item.displayed_url : "";
+        const domain = displayedUrl.replace(/^https?:\/\//, "").split(/\s|›/)[0];
+        return {
+          id: `nimble-clip-${query}-${i}`,
+          source: "nimble" as const,
+          kind: "clipping" as const,
+          title: String(item.title),
+          snippet: typeof item.snippet === "string" ? item.snippet : undefined,
+          sourceUrl: domain ? `https://${domain}` : undefined,
+          credit: typeof item.cleaned_domain === "string" ? item.cleaned_domain : domain || undefined,
+          query,
+          width: 4,
+          height: 5,
+        };
+      });
   } catch {
     return [];
   }

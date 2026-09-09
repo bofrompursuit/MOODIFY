@@ -27,6 +27,7 @@ export async function fetchUnsplash(query: string, count = 4): Promise<MoodTile[
   }) => ({
     id: `unsplash-${photo.id}`,
     source: "unsplash" as const,
+    kind: "image" as const,
     imageUrl: photo.urls.regular,
     sourceUrl: photo.links.html,
     credit: photo.user?.name,

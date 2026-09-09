@@ -13,6 +13,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [boardKey, setBoardKey] = useState(0);
+  const [generated, setGenerated] = useState(false);
 
   const handleGenerate = async (brief: string) => {
     setLoading(true);
@@ -28,6 +29,7 @@ export default function Home() {
       setTiles(data.tiles);
       setExtracted(data.extracted);
       setBoardKey((k) => k + 1);
+      setGenerated(true);
     } catch {
       setError("Something went wrong generating your board. Try again.");
     } finally {
@@ -74,6 +76,13 @@ export default function Home() {
           </div>
           <MoodBoardGrid key={boardKey} tiles={tiles} />
         </div>
+      )}
+
+      {generated && !loading && tiles.length === 0 && !error && (
+        <p className="text-center text-sm text-white/40">
+          No results came back for this brief. Try a different description,
+          or configure more image sources (see the pills above).
+        </p>
       )}
     </main>
   );

@@ -27,6 +27,7 @@ export async function fetchPexels(query: string, count = 4): Promise<MoodTile[]>
   }) => ({
     id: `pexels-${photo.id}`,
     source: "pexels" as const,
+    kind: "image" as const,
     imageUrl: photo.src.large,
     sourceUrl: photo.url,
     credit: photo.photographer,

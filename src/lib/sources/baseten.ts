@@ -32,6 +32,7 @@ export async function generateBaseten(prompt: string): Promise<MoodTile | null> 
     return {
       id: `baseten-${Date.now()}`,
       source: "baseten",
+      kind: "image",
       imageUrl,
       query: prompt,
       width: 1024,

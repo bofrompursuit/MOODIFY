@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Draggable } from "@hello-pangea/dnd";
 import { motion } from "framer-motion";
-import { RefreshCw, ExternalLink } from "lucide-react";
+import { RefreshCw, ExternalLink, Quote } from "lucide-react";
 import { ImageSource, MoodTile } from "@/lib/types";
 
 const SOURCE_LABEL: Record<ImageSource, string> = {
@@ -47,13 +47,34 @@ export function MoodTileCard({ tile, index, onRegenerate, regenerating }: MoodTi
               snapshot.isDragging ? "ring-2 ring-accent shadow-2xl" : ""
             }`}
           >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={tile.imageUrl}
-            alt={tile.query}
-            className="w-full h-full object-cover"
-            draggable={false}
-          />
+          {tile.kind === "clipping" ? (
+            <div className="w-full h-full flex flex-col justify-between p-4 bg-[#1a1622] bg-[radial-gradient(ellipse_at_top_left,rgba(168,85,247,0.12),transparent_60%)]">
+              <Quote className="text-accent/50 shrink-0" size={18} />
+              <div className="flex flex-col gap-2 overflow-hidden">
+                <p className="font-serif text-[15px] leading-snug text-white/90 line-clamp-4">
+                  {tile.title}
+                </p>
+                {tile.snippet && (
+                  <p className="text-xs text-white/45 leading-relaxed line-clamp-3">
+                    {tile.snippet}
+                  </p>
+                )}
+              </div>
+              {tile.credit && (
+                <span className="text-[10px] uppercase tracking-wide text-accent-2/70 truncate">
+                  {tile.credit}
+                </span>
+              )}
+            </div>
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={tile.imageUrl}
+              alt={tile.query}
+              className="w-full h-full object-cover"
+              draggable={false}
+            />
+          )}
 
           {regenerating && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/60">

@@ -3,7 +3,15 @@ export type ImageSource = "unsplash" | "pexels" | "nimble" | "baseten";
 export interface MoodTile {
   id: string;
   source: ImageSource;
-  imageUrl: string;
+  /** "image" renders a photo; "clipping" renders a text/link scrapbook card
+   *  (used when a source has real content but no direct image, e.g. Nimble
+   *  web search results). */
+  kind: "image" | "clipping";
+  imageUrl?: string;
+  /** Clipping-only: headline text for the card. */
+  title?: string;
+  /** Clipping-only: short excerpt text for the card. */
+  snippet?: string;
   /** Original page/attribution URL, if the source provides one. */
   sourceUrl?: string;
   /** Photographer / creator credit, if available. */
