@@ -5,13 +5,17 @@ import { DragDropContext, Droppable, DropResult } from "@hello-pangea/dnd";
 import { MoodTileCard } from "./MoodTileCard";
 import { ImageSource, MoodTile } from "@/lib/types";
 
-const COLUMN_COUNT = 4;
+const COLUMN_COUNT = 6;
 
 function distribute(tiles: MoodTile[], columnCount: number): MoodTile[][] {
   const columns: MoodTile[][] = Array.from({ length: columnCount }, () => []);
   tiles.forEach((tile, i) => columns[i % columnCount].push(tile));
   return columns;
 }
+
+// A few different vertical offsets, cycled per column, so the board reads
+// as scattered rather than a neat grid of even columns.
+const COLUMN_OFFSETS = ["0rem", "2.5rem", "1rem", "3rem", "0.5rem", "2rem"];
 
 interface MoodBoardGridProps {
   tiles: MoodTile[];
@@ -70,7 +74,7 @@ export function MoodBoardGrid({ tiles }: MoodBoardGridProps) {
     <DragDropContext onDragEnd={onDragEnd}>
       <div
         id="mood-board-export"
-        className="corkboard grid grid-cols-2 md:grid-cols-4 gap-6 w-full max-w-6xl mx-auto p-8 md:p-10"
+        className="corkboard grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 w-full max-w-[100rem] mx-auto p-8 md:p-12"
       >
         {columns.map((col, colIndex) => (
           <Droppable droppableId={`col-${colIndex}`} key={colIndex}>
@@ -79,7 +83,7 @@ export function MoodBoardGrid({ tiles }: MoodBoardGridProps) {
                 ref={provided.innerRef}
                 {...provided.droppableProps}
                 className="flex flex-col"
-                style={{ marginTop: colIndex % 2 === 1 ? "2rem" : 0 }}
+                style={{ marginTop: COLUMN_OFFSETS[colIndex % COLUMN_OFFSETS.length] }}
               >
                 {col.map((tile, rowIndex) => (
                   <MoodTileCard
