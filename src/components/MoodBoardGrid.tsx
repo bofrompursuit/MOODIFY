@@ -4,12 +4,22 @@ import { useState } from "react";
 import { DragDropContext, Droppable, DropResult } from "@hello-pangea/dnd";
 import { MoodTileCard } from "./MoodTileCard";
 import { ImageSource, MoodTile } from "@/lib/types";
+import { seededRandom } from "@/lib/hash";
 
 const COLUMN_COUNT = 6;
 
 function distribute(tiles: MoodTile[], columnCount: number): MoodTile[][] {
+  // The incoming order alternates photo/clipping (see aggregate.ts). Column
+  // count is a multiple of that 2-item stride, so a plain round-robin by
+  // index sends every photo to even columns and every clipping to odd
+  // columns — visually segregated instead of mixed. A deterministic
+  // shuffle (stable across re-renders, since it's seeded by tile id, not
+  // Math.random) breaks that alignment so both types land throughout.
+  const shuffled = [...tiles].sort(
+    (a, b) => seededRandom(a.id + "shuffle") - seededRandom(b.id + "shuffle")
+  );
   const columns: MoodTile[][] = Array.from({ length: columnCount }, () => []);
-  tiles.forEach((tile, i) => columns[i % columnCount].push(tile));
+  shuffled.forEach((tile, i) => columns[i % columnCount].push(tile));
   return columns;
 }
 
