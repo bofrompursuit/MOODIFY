@@ -20,6 +20,10 @@ import { MoodTile } from "../types";
  * instead of throwing.
  */
 const IMAGE_ENTITY_KEYS = ["ImageResult", "Image", "InlineImage", "ImagesResult"];
+// Nimble does live web scraping per request, which can occasionally hang;
+// bound it well under the route's maxDuration so a stuck call can't stall
+// the whole board indefinitely.
+const NIMBLE_TIMEOUT_MS = 20_000;
 
 export async function fetchNimble(query: string, count = 4): Promise<MoodTile[]> {
   if (!hasNimbleKey()) return [];
@@ -42,6 +46,7 @@ export async function fetchNimble(query: string, count = 4): Promise<MoodTile[]>
         query,
       }),
       cache: "no-store",
+      signal: AbortSignal.timeout(NIMBLE_TIMEOUT_MS),
     });
     if (!res.ok) {
       console.warn(`[nimble] ${res.status} ${res.statusText}: ${await res.text()}`);
@@ -98,6 +103,7 @@ export async function fetchNimbleClippings(query: string, count = 4): Promise<Mo
       },
       body: JSON.stringify({ parse: true, search_engine: "google_search", query }),
       cache: "no-store",
+      signal: AbortSignal.timeout(NIMBLE_TIMEOUT_MS),
     });
     if (!res.ok) {
       console.warn(`[nimble] clippings ${res.status} ${res.statusText}: ${await res.text()}`);

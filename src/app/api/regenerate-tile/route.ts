@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { regenerateTile } from "@/lib/aggregate";
 import { ImageSource } from "@/lib/types";
 
+// A Baseten cold start or Nimble scrape can take a while; give this room
+// to finish rather than getting killed by Vercel's default timeout.
+export const maxDuration = 60;
+
 const VALID_SOURCES: ImageSource[] = ["unsplash", "pexels", "nimble", "baseten"];
 
 export async function POST(req: NextRequest) {

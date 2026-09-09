@@ -70,12 +70,17 @@ export function MoodBoardGrid({ tiles }: MoodBoardGridProps) {
     <DragDropContext onDragEnd={onDragEnd}>
       <div
         id="mood-board-export"
-        className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-6xl mx-auto p-4 rounded-2xl"
+        className="corkboard grid grid-cols-2 md:grid-cols-4 gap-6 w-full max-w-6xl mx-auto p-8 md:p-10"
       >
         {columns.map((col, colIndex) => (
           <Droppable droppableId={`col-${colIndex}`} key={colIndex}>
             {(provided) => (
-              <div ref={provided.innerRef} {...provided.droppableProps} className="flex flex-col">
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="flex flex-col"
+                style={{ marginTop: colIndex % 2 === 1 ? "2rem" : 0 }}
+              >
                 {col.map((tile, rowIndex) => (
                   <MoodTileCard
                     key={tile.id}

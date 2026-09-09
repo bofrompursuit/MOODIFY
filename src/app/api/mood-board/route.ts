@@ -3,6 +3,11 @@ import { extractBrief } from "@/lib/extractKeywords";
 import { buildMoodBoard } from "@/lib/aggregate";
 import { syncMoodBoardToSalesforce } from "@/lib/salesforce";
 
+// Nimble's live scrapes can take 15-30s; Vercel's default function timeout
+// is well under that, so without this the request gets killed mid-flight
+// and the client just sees nothing happen.
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   const { brief } = await req.json();
 
